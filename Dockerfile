@@ -86,6 +86,20 @@ RUN \
         ; \
     fi
 
+RUN pip3 --no-cache-dir install --upgrade awscli
+
+RUN \
+    set -ex; \
+    echo "Installing NodeJs" \
+    ; \
+    curl -sl "https://deb.nodesource.com/setup_14.x" 
+RUN apk update   
+RUN apk add nodejs
+RUN apk add npm
+
+RUN node -v
+RUN npm -v
+
 COPY entrypoint.sh /entrypoint.sh
 
 ## https://github.com/docker-library/docker/blob/fe2ca76a21fdc02cbb4974246696ee1b4a7839dd/18.06/modprobe.sh
