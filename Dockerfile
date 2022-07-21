@@ -88,18 +88,16 @@ RUN \
 
 RUN pip3 --no-cache-dir install --upgrade awscli
 
-RUN \
-    set -ex; \
-    echo "Installing NodeJs" \
-    ; \
-    curl -sl "https://deb.nodesource.com/setup_14.x" 
-RUN apk update   
-RUN apk add nodejs
-RUN apk add npm
-
+#RUN apk update   
+RUN apk add helm --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
+RUN apk add kubectl --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
+RUN apk add nodejs=14.20.0-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
+RUN apk add npm=7.17.0-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
+RUN apk add jq --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
+RUN apk add curl
 RUN node -v
 RUN npm -v
-
+RUN helm version
 COPY entrypoint.sh /entrypoint.sh
 
 ## https://github.com/docker-library/docker/blob/fe2ca76a21fdc02cbb4974246696ee1b4a7839dd/18.06/modprobe.sh
