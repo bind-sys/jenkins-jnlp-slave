@@ -92,8 +92,9 @@ RUN apk --no-cache add  make g++
 #RUN apk update   
 RUN apk add helm --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 RUN apk add kubectl --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-RUN apk add nodejs=14.20.0-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
-RUN apk add npm=7.17.0-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
+#RUN apk add nodejs=16.17.1-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/main
+#RUN apk add npm=8.10.0-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.16/main
+RUN apk add nodejs npm # latest version
 RUN apk add jq --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
 RUN apk add curl
 RUN apk add gnupg
