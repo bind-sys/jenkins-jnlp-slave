@@ -1,4 +1,4 @@
-ARG FROM_TAG=4.13.2-1-alpine
+ARG FROM_TAG=3107.v665000b_51092-2
 
 FROM jenkins/inbound-agent:${FROM_TAG}
 
@@ -16,7 +16,7 @@ RUN \
         echo "Alpine" ; \
     elif [ -f /etc/debian_version ] ; then \
         echo "Debian, setting locales" \
-        && apt-get update \
+        && apt-get update --allow-releaseinfo-change \
         && apt-get install -y --no-install-recommends locales \
         && localedef  -i en_US -f UTF-8 en_US.UTF-8 \
         && rm -rf /var/lib/apt/lists/* \
@@ -86,22 +86,60 @@ RUN \
         ; \
     fi
 
-RUN pip3 --no-cache-dir install --upgrade awscli
-RUN apk --no-cache add  make g++
+RUN \
+   apt-get update; \
+   apt-get install zip unzip;
 
-#RUN apk update   
-RUN apk add helm --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-RUN apk add kubectl --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-#RUN apk add nodejs=16.17.1-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/main
-#RUN apk add npm=8.10.0-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.16/main
-RUN apk add nodejs npm # latest version
-RUN apk add jq --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
-RUN apk add curl
-RUN apk add gnupg
+# Install sops
+RUN \
+   curl -SsLo /usr/bin/sops https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux \
+   && chmod +x /usr/bin/sops
+
+# Install terraform
+RUN \
+    curl https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_linux_386.zip --output terraform.zip \
+    && unzip terraform.zip && rm terraform.zip \
+    && mv terraform /usr/bin/terraform \
+    && chmod +x /usr/bin/terraform
+
+# Sonarqube
+RUN \
+    curl https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip --output sonarqube.zip \
+    && unzip sonarqube.zip && rm sonarqube.zip \
+    && mv sonar-scanner-4.7.0.2747-linux/ /usr/bin/sonarqube \
+    && ln -s /usr/bin/sonarqube/bin/sonar-scanner /usr/bin/sonar-scanner
+
+# jq
+RUN \
+    curl -LO https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
+    && mv jq-linux64 /usr/bin/jq-linux64 \
+    && chmod +x /usr/bin/jq-linux64 \
+    && ln -s /usr/bin/jq-linux64 /usr/bin/jq
+
+RUN pip3 --no-cache-dir install --upgrade awscli
+RUN apt-get install make g++ -y
+
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && chmod +x ./kubectl \
+    && mv ./kubectl /usr/local/bin/kubectl \
+    && curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 \
+    && chmod +x get_helm.sh && ./get_helm.sh
+
+RUN apt-get install npm -y # latest version
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+SHELL ["/bin/bash", "-c", "source ~/.profile"]
+RUN nvm install v16.18.1
+RUN nvm use v16.18.1
+RUN npm install npm@8.19.2 -g
+RUN apt-get install gnupg -y
 RUN gpg --version
-RUN node -v
-RUN npm -v
+RUN node --version
+RUN npm --version
 RUN helm version
+RUN sops --version
+RUN terraform --version
+RUN sonar-scanner -v
+RUN jq --version
 COPY entrypoint.sh /entrypoint.sh
 
 ## https://github.com/docker-library/docker/blob/fe2ca76a21fdc02cbb4974246696ee1b4a7839dd/18.06/modprobe.sh
