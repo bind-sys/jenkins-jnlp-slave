@@ -1,4 +1,4 @@
-ARG FROM_TAG=3107.v665000b_51092-2
+ARG FROM_TAG=3131.vf2b_b_798b_ce99-1
 
 FROM jenkins/inbound-agent:${FROM_TAG}
 
@@ -86,6 +86,10 @@ RUN \
         ; \
     fi
 
+#RUN apt-get update \
+#    && apt-get install -y software-properties-common \
+#    && apt-get install -y ansible
+
 RUN \
    apt-get update; \
    apt-get install zip unzip;
@@ -101,6 +105,13 @@ RUN \
     && unzip terraform.zip && rm terraform.zip \
     && mv terraform /usr/bin/terraform \
     && chmod +x /usr/bin/terraform
+
+RUN \
+    curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/v0.46.1/terragrunt_linux_amd64 \
+    && mv terragrunt_linux_amd64 terragrunt \
+    && chmod +x terragrunt \
+    && mv terragrunt /usr/local/bin/terragrunt
+
 
 # Sonarqube
 RUN \
@@ -125,12 +136,13 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -
     && curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 \
     && chmod +x get_helm.sh && ./get_helm.sh
 
-RUN apt-get install npm -y # latest version
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-SHELL ["/bin/bash", "-c", "source ~/.profile"]
-RUN nvm install v16.18.1
-RUN nvm use v16.18.1
-RUN npm install npm@8.19.2 -g
+RUN curl -sL https://deb.nodesource.com/setup_16.x -o /tmp/nodesource_setup.sh
+RUN bash /tmp/nodesource_setup.sh
+RUN apt install nodejs
+RUN npm install -g serverless
+RUN npm install --g yarn
+RUN serverless --version
+RUN yarn --version
 RUN apt-get install gnupg -y
 RUN gpg --version
 RUN node --version
@@ -138,8 +150,10 @@ RUN npm --version
 RUN helm version
 RUN sops --version
 RUN terraform --version
+RUN terragrunt -version
 RUN sonar-scanner -v
 RUN jq --version
+
 COPY entrypoint.sh /entrypoint.sh
 
 ## https://github.com/docker-library/docker/blob/fe2ca76a21fdc02cbb4974246696ee1b4a7839dd/18.06/modprobe.sh

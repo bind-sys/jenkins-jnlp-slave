@@ -42,3 +42,11 @@ The following distributions are supported:
 * alpine (also the default)
 * debian
 * jdk11
+
+docker build --no-cache --progress plaintext -t test:test --network host .
+
+aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 172422354804.dkr.ecr.ap-southeast-1.amazonaws.com
+
+docker tag test:test 172422354804.dkr.ecr.ap-southeast-1.amazonaws.com/cxp/image/jenkins-agent:0.0.6
+
+docker push 172422354804.dkr.ecr.ap-southeast-1.amazonaws.com/cxp/image/jenkins-agent:0.0.6
